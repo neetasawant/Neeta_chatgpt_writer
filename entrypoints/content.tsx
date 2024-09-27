@@ -1,21 +1,29 @@
+// contentScript.tsx
+import * as React from 'react';
+import ReactDOM from 'react-dom';
+import ModalComponent from './components/ModalComponent';
+
 export default defineContentScript({
   matches: ['*://*.linkedin.com/*'],
   main() {
-    // Define a function to create and insert the AI button
-    function insertAIButton(messageBox: HTMLElement) {
-      // Check if the AI button already exists to prevent duplicates
-      if (messageBox.querySelector('.ai-button')) {
-        return;
-      }
+    //modal visibility 
+    let isModalOpen = false;
+    const toggleModal = () => {
+      isModalOpen = !isModalOpen;
+      renderModal(); 
+    };
 
-      // Create the AI button
+    //button display
+    function insertAIButton(messageBox: HTMLElement) {
+      if (messageBox.querySelector('.ai-button')) return;
+
       const aiButton = document.createElement('button');
       aiButton.className = 'ai-button';
       aiButton.innerText = 'AI';
       aiButton.style.position = 'absolute';
       aiButton.style.right = '10px';
       aiButton.style.top = '10px';
-      aiButton.style.background = '#0a66c2'; // LinkedIn blue color
+      aiButton.style.background = '#0a66c2';
       aiButton.style.color = 'white';
       aiButton.style.border = 'none';
       aiButton.style.borderRadius = '5px';
@@ -23,13 +31,11 @@ export default defineContentScript({
       aiButton.style.cursor = 'pointer';
       aiButton.style.zIndex = '1000';
 
-      // Attach event listener to the button
       aiButton.addEventListener('click', () => {
-        console.log('AI Button Clicked');
-        // Add your AI-related functionality here
+        console.log('AI button clicked');
+        toggleModal(); 
       });
 
-      // Ensure the container has `position: relative` to position the button correctly
       const container = messageBox.parentElement;
       if (container) {
         container.style.position = 'relative';
@@ -37,14 +43,30 @@ export default defineContentScript({
       }
     }
 
-    // Create a MutationObserver to detect when new message boxes are added
+    // render modal
+    function renderModal() {
+      const modalContainerId = 'ai-modal-container';
+      let modalContainer = document.getElementById(modalContainerId);
+
+      
+      if (!modalContainer) {
+        modalContainer = document.createElement('div');
+        modalContainer.id = modalContainerId;
+        document.body.appendChild(modalContainer);
+      }
+
+      ReactDOM.render(
+        <ModalComponent isOpen={isModalOpen} onClose={toggleModal} />,
+        modalContainer
+      );
+    }
+
+    //  track new LinkedIn message boxes
     const observer = new MutationObserver((mutationsList) => {
       for (const mutation of mutationsList) {
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
           mutation.addedNodes.forEach((node) => {
-            // Check if the added node is the LinkedIn message box
             if (node instanceof HTMLElement && node.matches('.msg-form__contenteditable')) {
-              console.log('Message box detected by MutationObserver!');
               insertAIButton(node);
             }
           });
@@ -52,13 +74,14 @@ export default defineContentScript({
       }
     });
 
-    // Start observing the document body for child additions
     observer.observe(document.body, { childList: true, subtree: true });
 
-    // Optional: Insert AI button for message boxes already present in the DOM (if any)
+    // buttons to any existing message boxes
     const existingMessageBoxes = document.querySelectorAll('.msg-form__contenteditable');
     existingMessageBoxes.forEach((box) => {
       insertAIButton(box as HTMLElement);
     });
-  }
+
+    renderModal();
+  },
 });
