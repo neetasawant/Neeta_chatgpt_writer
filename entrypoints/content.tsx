@@ -1,38 +1,74 @@
-// contentScript.tsx
 import * as React from 'react';
 import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client'; 
 import ModalComponent from './components/ModalComponent';
 
 export default defineContentScript({
   matches: ['*://*.linkedin.com/*'],
   main() {
-    //modal visibility 
     let isModalOpen = false;
+    let activeMessageBox: HTMLElement | null = null; 
+    let modalRoot: any = null; 
+
     const toggleModal = () => {
       isModalOpen = !isModalOpen;
+      console.log(isModalOpen, 'is modal open');
       renderModal(); 
     };
 
-    //button display
+    
+    const handleInsertText = (text: string) => {
+      if (!activeMessageBox) {
+        console.warn("activeMessageBox is null. Cannot insert text.");
+        return; 
+      }
+
+      activeMessageBox.innerHTML = ''; 
+
+      const p = document.createElement('p');
+      p.textContent = text; 
+
+      activeMessageBox.appendChild(p); 
+
+      const placeholder = activeMessageBox.nextElementSibling;
+      if (placeholder instanceof HTMLElement && placeholder.classList.contains('msg-form__placeholder')) {
+        placeholder.style.display = 'none'; 
+      }
+
+      activeMessageBox.focus();
+
+      const range = document.createRange();
+      const selection = window.getSelection();
+      
+      if (selection) {
+        range.selectNodeContents(activeMessageBox);
+        range.collapse(false); 
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+
+      closeModal(); 
+    };
+
+    const closeModal = () => {
+      isModalOpen = false;
+      renderModal(); 
+    };
+
     function insertAIButton(messageBox: HTMLElement) {
       if (messageBox.querySelector('.ai-button')) return;
 
-      const aiButton = document.createElement('button');
-      aiButton.className = 'ai-button';
-      aiButton.innerText = 'AI';
+      const aiButton = document.createElement('img');
+      aiButton.src = browser.runtime.getURL('/icon/ai-icon.png');  
       aiButton.style.position = 'absolute';
-      aiButton.style.right = '10px';
-      aiButton.style.top = '10px';
-      aiButton.style.background = '#0a66c2';
-      aiButton.style.color = 'white';
-      aiButton.style.border = 'none';
-      aiButton.style.borderRadius = '5px';
-      aiButton.style.padding = '5px';
+      aiButton.style.right = '5px';
+      aiButton.style.bottom = '5px';  
+      aiButton.style.width = '30px';
+      aiButton.style.height = '30px';  
       aiButton.style.cursor = 'pointer';
       aiButton.style.zIndex = '1000';
-
       aiButton.addEventListener('click', () => {
-        console.log('AI button clicked');
+        activeMessageBox = messageBox; 
         toggleModal(); 
       });
 
@@ -43,25 +79,29 @@ export default defineContentScript({
       }
     }
 
-    // render modal
     function renderModal() {
       const modalContainerId = 'ai-modal-container';
       let modalContainer = document.getElementById(modalContainerId);
 
-      
       if (!modalContainer) {
         modalContainer = document.createElement('div');
         modalContainer.id = modalContainerId;
         document.body.appendChild(modalContainer);
       }
 
-      ReactDOM.render(
-        <ModalComponent isOpen={isModalOpen} onClose={toggleModal} />,
-        modalContainer
+      if (!modalRoot) {
+        modalRoot = createRoot(modalContainer); 
+      }
+
+      modalRoot.render(
+        <ModalComponent
+          isOpen={isModalOpen}
+          onClose={closeModal} 
+          onInsert={handleInsertText} 
+        />
       );
     }
 
-    //  track new LinkedIn message boxes
     const observer = new MutationObserver((mutationsList) => {
       for (const mutation of mutationsList) {
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
@@ -76,12 +116,12 @@ export default defineContentScript({
 
     observer.observe(document.body, { childList: true, subtree: true });
 
-    // buttons to any existing message boxes
+    // Add AI buttons to any existing message boxes
     const existingMessageBoxes = document.querySelectorAll('.msg-form__contenteditable');
     existingMessageBoxes.forEach((box) => {
       insertAIButton(box as HTMLElement);
     });
 
-    renderModal();
+    renderModal(); // Initial render
   },
 });
