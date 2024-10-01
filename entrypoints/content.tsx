@@ -10,12 +10,14 @@ export default defineContentScript({
     let activeMessageBox: HTMLElement | null = null; 
     let modalRoot: ReturnType<typeof createRoot> | null = null; 
 
+    // toggle modal
     const toggleModal = () => {
       isModalOpen = !isModalOpen;
       console.log(isModalOpen, 'is modal open');
       renderModal(); 
     };
 
+    // function to insert text in message box
     const handleInsertText = (text: string) => {
       if (!activeMessageBox) {
         console.warn("activeMessageBox is null. Cannot insert text.");
@@ -29,7 +31,7 @@ export default defineContentScript({
 
       activeMessageBox.appendChild(p); 
 
-      // Hide placeholder if applicable
+      // hide placeholder if applicable
       const placeholder = activeMessageBox.nextElementSibling;
       if (placeholder instanceof HTMLElement && placeholder.classList.contains('msg-form__placeholder')) {
         placeholder.style.display = 'none'; 
@@ -39,6 +41,7 @@ export default defineContentScript({
       closeModal(); 
     };
 
+    // function to set in message box
     const focusMessageBox = (messageBox: HTMLElement) => {
       messageBox.focus();
       const range = document.createRange();
@@ -52,11 +55,13 @@ export default defineContentScript({
       }
     };
 
+    // function to close modal
     const closeModal = () => {
       isModalOpen = false;
       renderModal(); 
     };
 
+    // function to insert sticky icon on message box when in focus
     const insertAIButton = (messageBox: HTMLElement) => {
       if (messageBox.querySelector('.ai-button')) return;
 
@@ -68,15 +73,16 @@ export default defineContentScript({
       }
     };
 
+    // function to create AI icon 
     const createAIButton = (messageBox: HTMLElement) => {
       const aiButton = document.createElement('img');
       aiButton.src = AiIcon;
       aiButton.className = 'absolute right-2 bottom-2 w-12 h-12 cursor-pointer z-50 ai-button'; 
 
       aiButton.addEventListener('click', (event) => {
-        event.stopPropagation(); // Prevent the click from bubbling up
+        event.stopPropagation(); 
         activeMessageBox = messageBox; 
-        console.log('AI button clicked'); // Debugging log
+        console.log('AI button clicked'); 
         toggleModal(); 
       });
 
@@ -84,6 +90,7 @@ export default defineContentScript({
       return aiButton;
     };
 
+    // display ai icon when message box in focus
     const setupButtonVisibility = (aiButton: HTMLImageElement, messageBox: HTMLElement) => {
       messageBox.addEventListener('focus', () => {
         aiButton.style.display = 'block'; 
@@ -98,6 +105,7 @@ export default defineContentScript({
       });
     };
 
+    // function to render modal
     const renderModal = () => {
       const modalContainerId = 'ai-modal-container';
       let modalContainer = document.getElementById(modalContainerId);
@@ -121,6 +129,7 @@ export default defineContentScript({
       );
     };
 
+    // here the observer watches for added child nodes within the document body , to add AI icon
     const observer = new MutationObserver((mutationsList) => {
       mutationsList.forEach((mutation) => {
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
@@ -135,11 +144,11 @@ export default defineContentScript({
 
     observer.observe(document.body, { childList: true, subtree: true });
 
-    // Add AI buttons to existing message boxes
+    // add AI icon to existing message boxes
     document.querySelectorAll('.msg-form__contenteditable').forEach((box) => {
       insertAIButton(box as HTMLElement);
     });
 
-    renderModal(); // Initial render
+    renderModal(); 
   },
 });

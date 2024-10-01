@@ -1,7 +1,9 @@
 import * as React from "react";
 import "@/assets/styles.css";
-import Input from "./Input";
+import InputUserText from "./InputUserText";
 import GeneratedTextView from "./GeneratedTextView";
+import Button from "./Button";
+import GenerateIcon from "@/assets/generate.svg";
 
 interface ModalProps {
   isOpen: boolean;
@@ -78,23 +80,33 @@ const ModalComponent: React.FC<ModalProps> = ({
       onClick={handleOverlayClick}
     >
       <div
-        className="flex justify-center items-center fixed z-50 outline-none focus:outline-none w-[500px] min-h-[102px] transform -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 rounded-[8px] bg-white"
+        className="flex justify-center items-center fixed z-50 outline-none focus:outline-none w-[500px] min-h-[80px] transform -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 rounded-[8px] bg-white"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-5 rounded-lg w-full min-h-[102px] shadow-lg text-center">
+        <div className="p-5 rounded-lg w-full min-h-[80px] shadow-lg text-center">
           {dummyText ? (
             <GeneratedTextView
               userText={userText}
               dummyText={dummyText}
               onInsert={handleInsert}
+              generatedView={true}
             />
           ) : (
-            <Input
-              userText={userText}
-              onChange={handleInputChange}
-              inputError={inputError}
-              onGenerate={handleGenerate}
-            />
+            <>
+              <InputUserText
+                userText={userText}
+                onChange={handleInputChange}
+                inputError={inputError}
+              />
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleGenerate}
+                  icon={GenerateIcon}
+                  label="Generate"
+                  primary
+                />
+              </div>
+            </>
           )}
         </div>
       </div>

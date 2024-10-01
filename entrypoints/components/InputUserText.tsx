@@ -1,12 +1,8 @@
-import Button from "./Button";
-import GenerateIcon from "@/assets/generate.svg";
-
-const Input: React.FC<{
+const InputUserText: React.FC<{
   userText: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   inputError: boolean;
-  onGenerate: () => void;
-}> = ({ userText, onChange, inputError, onGenerate }) => (
+}> = ({ userText, onChange, inputError }) => (
   <>
     <input
       type="text"
@@ -20,15 +16,7 @@ const Input: React.FC<{
         Please enter a prompt before generating.
       </p>
     )}
-    <div className="flex justify-end">
-      <Button
-        onClick={onGenerate}
-        icon={GenerateIcon}
-        label="Generate"
-        primary
-      />
-    </div>
   </>
 );
 
-export default Input;
+export default InputUserText;

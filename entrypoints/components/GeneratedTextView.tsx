@@ -1,12 +1,13 @@
 import Button from "./Button";
 import InsertIcon from "@/assets/insert.svg";
 import RegenerateIcon from "@/assets/regenerate.svg";
-
+import Input from "./InputUserText";
 const GeneratedTextView: React.FC<{
   userText: string;
   dummyText: string;
   onInsert: () => void;
-}> = ({ userText, dummyText, onInsert }) => (
+  generatedView: boolean;
+}> = ({ userText, dummyText, onInsert, generatedView }) => (
   <>
     <div className="flex flex-col items-start bg-white p-3 rounded-lg w-full">
       <div className="bg-gray-100 p-3 rounded-[8px] mt-2 max-w-[80%] self-end text-right">
@@ -18,7 +19,7 @@ const GeneratedTextView: React.FC<{
       <input
         type="text"
         placeholder="Your prompt"
-        className="p-3 w-full h-[60px] rounded-[8px] mt-5"
+        className="p-3 w-full h-[60px] rounded-[8px] mt-5 outline-none border-none"
       />
     </div>
     <div className="flex justify-end items-center space-x-2 p-2">
