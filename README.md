@@ -57,8 +57,6 @@ Here is a screenshot of the chat:
     ```
 
 ## Features
-
-- List the key features of your project, such as:
 1. Shows the AI icon when the user focuses on the LinkedIn message input field.
 2. The icon disappears when the input field is no longer focused.
 3. Displays a center-aligned modal when clicking on the icon. 
