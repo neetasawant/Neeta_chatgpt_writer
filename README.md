@@ -41,7 +41,7 @@ Here is a screenshot of the chat:
 
 1. Clone this repository:
     ```bash
-    [git clone [https://github.com/neetasawant/Neeta_chatgpt_writer.git](https://github.com/neetasawant/Neeta_chatgpt_writer.git)]
+    [git clone https://github.com/neetasawant/Neeta_chatgpt_writer.git]
     ```
 2. Navigate into the project directory:
     ```bash
